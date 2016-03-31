@@ -1,7 +1,15 @@
 FROM ubuntu
 
-RUN apt-get update
-RUN apt-get install nginx curl -y
+RUN apt-get update && apt-get install -y \
+    nginx \
+    curl \
+    ca-certificates \
+    gcc \
+    libssl-dev \
+    libffi-dev \
+    python \
+    python-dev \
+    python-virtualenv
 RUN rm /etc/nginx/sites-enabled/default
 # gpg keys listed at https://github.com/nodejs/node
 RUN set -ex \
@@ -25,6 +33,16 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
   && grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
   && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
   && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc
+
+# fetch and untar latest simp_le client, clean up afterward
+RUN curl -SLO "https://github.com/kuba/simp_le/archive/master.tar.gz" \
+ && tar -xzf master.tar.gz -C /var \
+ && rm master.tar.gz \
+ && mv /var/simp_le-master /var/simp_le \
+ && mkdir -p /etc/ssl/letsencrypt
+
+# install simp_le virtualenv
+RUN (cd /var/simp_le && ./venv.sh)
 
 WORKDIR /app
 COPY ./package.json /app/package.json
