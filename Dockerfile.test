@@ -1,8 +1,11 @@
 FROM ubuntu
 
-RUN apt-get update
-RUN apt-get install nginx curl -y
-RUN rm /etc/nginx/sites-enabled/default
+RUN apt-get update && \
+  apt-get install -y software-properties-common && \
+  add-apt-repository -y ppa:nginx/stable && \
+  apt-get install -y nginx curl && \
+  rm /etc/nginx/sites-enabled/default
+
 # gpg keys listed at https://github.com/nodejs/node
 RUN set -ex \
   && for key in \
